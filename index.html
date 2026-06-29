@@ -8,7 +8,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: Arial, sans-serif;
-    background: #F5F0E8;
+    background: #F5F2EC;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -23,11 +23,11 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.4);
   }
   .header {
-    background: #202E57;
+    background: #3B4A3A;
     padding: 1.5rem 1.25rem;
   }
   .header h1 { color: #fff; font-size: 17px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
-  .header p  { color: #A8B8D8; font-size: 12px; margin-top: 2px; text-transform: uppercase; letter-spacing: .4px; }
+  .header p  { color: #A8B8A6; font-size: 12px; margin-top: 2px; text-transform: uppercase; letter-spacing: .4px; }
   .body { padding: 1.5rem 1.25rem; }
   .tipo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1.2rem; }
   .tipo-btn {
@@ -90,7 +90,7 @@
     color: #6b7280;
     transition: all .15s;
   }
-  .pag-btn.active { background: #eff6ff; border-color: #93c5fd; color: #202E57; }
+  .pag-btn.active { background: #eff6ff; border-color: #93c5fd; color: #3B4A3A; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .cat-block { display: none; }
   .cat-block.visible { display: block; }
@@ -140,7 +140,7 @@
     color: #111827;
     cursor: pointer;
   }
-  .autocomplete-item:hover, .autocomplete-item.selected { background: #eff6ff; color: #2A3E72; }
+  .autocomplete-item:hover, .autocomplete-item.selected { background: #eff6ff; color: #5C6B5A; }
   .autocomplete-item:first-child { border-radius: 8px 8px 0 0; }
   .autocomplete-item:last-child  { border-radius: 0 0 8px 8px; }
 
@@ -221,7 +221,7 @@
     margin-top: 4px;
     border: none;
     border-radius: 12px;
-    background: #202E57;
+    background: #3B4A3A;
     color: #fff;
     font-size: 15px;
     font-weight: 700;
@@ -232,7 +232,7 @@
     justify-content: center;
     transition: background .15s;
   }
-  .btn:hover { background: #2A3E72; }
+  .btn:hover { background: #5C6B5A; }
   .btn.sending { background: #6b7280; pointer-events: none; }
   .btn.ok  { background: #15803d; }
   .btn.err { background: #b91c1c; }
@@ -243,7 +243,7 @@
 <div class="card">
   <div class="header">
     <h1>CONTROLE FINANCEIRO</h1>
-    <p>IVAN TEODORO</p>
+    <p>VINÍCIUS TEODORO</p>
   </div>
 
   <div class="body">
@@ -319,19 +319,15 @@
 </div>
 
 <script>
-  const SUPABASE_URL = "https://oampajdxqkeyosjgrrko.supabase.co/rest/v1/lancamentos";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hbXBhamR4cWtleW9zamdycmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0OTYyNTEsImV4cCI6MjA5NTA3MjI1MX0.qQk1XcR-EpJ3cH6Oqq43SdvD11ypacDfGr2MtCH-8Jg";
+  const SUPABASE_URL = "https://khjmarmemnngzbbwhdjf.supabase.co/rest/v1/lancamentos";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtoam1hcm1lbW5uZ3piYndoZGpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2ODc5MTUsImV4cCI6MjA5ODI2MzkxNX0.SSYk9ZhPCPTu4f6M9PQdoPiVDQk_TLVG1m8E1BOhVL0";
   let tipoAtual = "Despesa";
   let pagamentoAtual = "Credito";
 
   const categoriasDespesa = [
-    "Almoço semana","Apartamento","Barbeiro","Convênio médico",
-    "Despesas auto","Empréstimo","Farmácia","Faxineira","Financiamento apto",
-    "IPTU","Luz/Água/Gás/Condomínio","Mercado","Presentes","Restaurante/Delivery",
-    "Sandy e Marley","Seguro de vida","TV/Celular/Internet",
-    "Uber/99/Táxi","Vestuário","Vinícius"
+    "Cabelo","Carro","Compras","iFood","Júlia","Saídas","Uber"
   ];
-  const categoriasReceita = ["Salário","Aluguel"];
+  const categoriasReceita = ["BASF","Ivan","MX","VR"];
 
   document.getElementById("data").value = new Date().toISOString().split("T")[0];
 
