@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle Financeiro — Vinícius Teodoro</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #F5F0E8;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0.4rem 0.5rem;
+  }
+  .card {
+    background: #fff;
+    width: 100%;
+    max-width: 440px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .header {
+    background: #202E57;
+    padding: 1.5rem 1.25rem;
+  }
+  .header h1 { color: #fff; font-size: 17px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+  .header p  { color: #A8B8D8; font-size: 12px; margin-top: 2px; text-transform: uppercase; letter-spacing: .4px; }
+  .body { padding: 1.5rem 1.25rem; }
+  .tipo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1.2rem; }
+  .tipo-btn {
+    padding: 8px;
+    border-radius: 10px;
+    border: 1.5px solid #e5e7eb;
+    background: #f9fafb;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #6b7280;
+    transition: all .15s;
+  }
+  .tipo-btn.active-despesa { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
+  .tipo-btn.active-receita { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+  .divider { height: 1px; background: #f3f4f6; margin: 0 0 1.2rem; }
+  .field { margin-bottom: 1rem; }
+  .field label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 4px;
+  }
+  .field input {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #111827;
+    background: #fff;
+    outline: none;
+    transition: border-color .15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .field input:focus { border-color: #3b82f6; }
+  .pagamento-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 0; }
+  .pag-btn {
+    padding: 8px;
+    border-radius: 10px;
+    border: 1.5px solid #e5e7eb;
+    background: #f9fafb;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #6b7280;
+    transition: all .15s;
+  }
+  .pag-btn.active { background: #eff6ff; border-color: #93c5fd; color: #202E57; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cat-block { display: none; }
+  .cat-block.visible { display: block; }
+
+  .autocomplete-wrapper { position: relative; }
+  .autocomplete-wrapper input {
+    width: 100%;
+    padding: 11px 36px 11px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #111827;
+    background: #fff;
+    outline: none;
+    transition: border-color .15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .autocomplete-wrapper input:focus { border-color: #3b82f6; }
+  .autocomplete-arrow {
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    color: #9ca3af;
+    pointer-events: none;
+  }
+  .autocomplete-list {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    max-height: 170px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  }
+  .autocomplete-list.open { display: block; }
+  .autocomplete-item {
+    padding: 11px 12px;
+    font-size: 14px;
+    color: #111827;
+    cursor: pointer;
+  }
+  .autocomplete-item:hover, .autocomplete-item.selected { background: #eff6ff; color: #2A3E72; }
+  .autocomplete-item:first-child { border-radius: 8px 8px 0 0; }
+  .autocomplete-item:last-child  { border-radius: 0 0 8px 8px; }
+
+  .parcelas-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color .15s;
+  }
+  .parcelas-wrapper:focus-within { border-color: #3b82f6; }
+  .parcelas-btn {
+    width: 36px;
+    flex-shrink: 0;
+    background: #f9fafb;
+    border: none;
+    font-size: 18px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .1s;
+    user-select: none;
+  }
+  .parcelas-btn:hover { background: #f3f4f6; color: #111827; }
+  .parcelas-btn:disabled { color: #d1d5db; cursor: default; background: #f9fafb; }
+  #parcelas {
+    border: none;
+    border-radius: 0;
+    text-align: center;
+    padding: 11px 4px;
+    flex: 1;
+    font-size: 14px;
+    color: #111827;
+    outline: none;
+    -moz-appearance: textfield;
+    min-width: 0;
+  }
+  #parcelas::-webkit-outer-spin-button,
+  #parcelas::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .valor-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color .15s;
+  }
+  .valor-wrapper:focus-within { border-color: #3b82f6; }
+  .valor-prefix {
+    padding: 0 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    white-space: nowrap;
+    user-select: none;
+  }
+  #valor {
+    border: none;
+    border-radius: 0;
+    padding: 11px 12px 11px 6px;
+    flex: 1;
+    font-size: 14px;
+    color: #111827;
+    outline: none;
+    min-width: 0;
+    background: #fff;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 11px;
+    margin-top: 4px;
+    border: none;
+    border-radius: 12px;
+    background: #202E57;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s;
+  }
+  .btn:hover { background: #2A3E72; }
+  .btn.sending { background: #6b7280; pointer-events: none; }
+  .btn.ok  { background: #15803d; }
+  .btn.err { background: #b91c1c; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <h1>CONTROLE FINANCEIRO</h1>
+    <p>IVAN TEODORO</p>
+  </div>
+
+  <div class="body">
+    <div class="tipo-row">
+      <button class="tipo-btn active-despesa" id="btnDespesa" onclick="setTipo('Despesa')">↓ Despesa</button>
+      <button class="tipo-btn" id="btnReceita" onclick="setTipo('Receita')">↑ Receita</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="field">
+      <label>Data</label>
+      <input type="date" id="data">
+    </div>
+
+    <div class="cat-block visible" id="catDespesa">
+      <div class="field">
+        <label>Categoria</label>
+        <div class="autocomplete-wrapper">
+          <input type="text" id="inputDespesa" placeholder="Selecione ou digite..." autocomplete="off">
+          <span class="autocomplete-arrow">▼</span>
+          <div class="autocomplete-list" id="listaDespesa"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat-block" id="catReceita">
+      <div class="field">
+        <label>Categoria</label>
+        <div class="autocomplete-wrapper">
+          <input type="text" id="inputReceita" placeholder="Selecione ou digite..." autocomplete="off">
+          <span class="autocomplete-arrow">▼</span>
+          <div class="autocomplete-list" id="listaReceita"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Descrição</label>
+      <input type="text" id="descricao" placeholder="Ex: Almoço, Uber...">
+    </div>
+
+    <div id="campoPagamento" class="field">
+      <label>Pagamento</label>
+      <div class="pagamento-row">
+        <button class="pag-btn" id="btnDebito" onclick="setPagamento('Debito')">Débito</button>
+        <button class="pag-btn active" id="btnCredito" onclick="setPagamento('Credito')">Crédito</button>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Parcelas</label>
+        <div class="parcelas-wrapper">
+          <button class="parcelas-btn" id="btnMenos" onclick="alterarParcelas(-1)" disabled>−</button>
+          <input type="tel" inputmode="numeric" id="parcelas" value="1" min="1">
+          <button class="parcelas-btn" onclick="alterarParcelas(1)">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Valor</label>
+        <div class="valor-wrapper">
+          <span class="valor-prefix">R$</span>
+          <input type="tel" inputmode="numeric" id="valor" placeholder="0,00">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn" id="btnSalvar" onclick="salvar()">
+      <span id="btnLabel">SALVAR</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://oampajdxqkeyosjgrrko.supabase.co/rest/v1/lancamentos";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hbXBhamR4cWtleW9zamdycmtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0OTYyNTEsImV4cCI6MjA5NTA3MjI1MX0.qQk1XcR-EpJ3cH6Oqq43SdvD11ypacDfGr2MtCH-8Jg";
+  let tipoAtual = "Despesa";
+  let pagamentoAtual = "Credito";
+
+  const categoriasDespesa = [
+    "Almoço semana","Apartamento","Barbeiro","Convênio médico",
+    "Despesas auto","Empréstimo","Farmácia","Faxineira","Financiamento apto",
+    "IPTU","Luz/Água/Gás/Condomínio","Mercado","Presentes","Restaurante/Delivery",
+    "Sandy e Marley","Seguro de vida","TV/Celular/Internet",
+    "Uber/99/Táxi","Vestuário","Vinícius"
+  ];
+  const categoriasReceita = ["Salário","Aluguel"];
+
+  document.getElementById("data").value = new Date().toISOString().split("T")[0];
+
+  function setTipo(t) {
+    tipoAtual = t;
+    document.getElementById("btnDespesa").className = "tipo-btn" + (t === "Despesa" ? " active-despesa" : "");
+    document.getElementById("btnReceita").className = "tipo-btn" + (t === "Receita" ? " active-receita" : "");
+    document.getElementById("catDespesa").className = "cat-block" + (t === "Despesa" ? " visible" : "");
+    document.getElementById("catReceita").className = "cat-block" + (t === "Receita" ? " visible" : "");
+    document.getElementById("campoPagamento").style.display = t === "Receita" ? "none" : "block";
+  }
+
+  function setupAutocomplete(inputId, listaId, opcoes) {
+    const input = document.getElementById(inputId);
+    const lista = document.getElementById(listaId);
+    let selectedIndex = -1;
+
+    function renderLista(filtro) {
+      const termo = filtro.toLowerCase();
+      const filtradas = opcoes.filter(o => o.toLowerCase().includes(termo));
+      lista.innerHTML = "";
+      selectedIndex = -1;
+      if (filtradas.length === 0) { lista.classList.remove("open"); return; }
+      filtradas.forEach(op => {
+        const item = document.createElement("div");
+        item.className = "autocomplete-item";
+        item.textContent = op;
+        item.addEventListener("mousedown", e => {
+          e.preventDefault();
+          input.value = op;
+          lista.classList.remove("open");
+        });
+        lista.appendChild(item);
+      });
+      lista.classList.add("open");
+    }
+
+    input.addEventListener("focus", () => renderLista(input.value));
+    input.addEventListener("input", () => renderLista(input.value));
+    input.addEventListener("keydown", e => {
+      const items = lista.querySelectorAll(".autocomplete-item");
+      if (e.key === "ArrowDown") {
+        selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+      } else if (e.key === "ArrowUp") {
+        selectedIndex = Math.max(selectedIndex - 1, 0);
+      } else if (e.key === "Enter" && selectedIndex >= 0) {
+        input.value = items[selectedIndex].textContent;
+        lista.classList.remove("open");
+        return;
+      } else if (e.key === "Escape") {
+        lista.classList.remove("open"); return;
+      }
+      items.forEach((it, i) => it.classList.toggle("selected", i === selectedIndex));
+      if (selectedIndex >= 0) items[selectedIndex].scrollIntoView({ block: "nearest" });
+    });
+    document.addEventListener("click", e => {
+      if (!input.parentElement.contains(e.target)) lista.classList.remove("open");
+    });
+  }
+
+  setupAutocomplete("inputDespesa", "listaDespesa", categoriasDespesa);
+  setupAutocomplete("inputReceita", "listaReceita", categoriasReceita);
+
+
+  function setPagamento(p) {
+    pagamentoAtual = p;
+    document.getElementById("btnDebito").className = "pag-btn" + (p === "Debito" ? " active" : "");
+    document.getElementById("btnCredito").className = "pag-btn" + (p === "Credito" ? " active" : "");
+  }
+  function alterarParcelas(delta) {
+    const input = document.getElementById("parcelas");
+    const novo = Math.max(1, (parseInt(input.value) || 1) + delta);
+    input.value = novo;
+    document.getElementById("btnMenos").disabled = novo <= 1;
+  }
+
+  document.getElementById("parcelas").addEventListener("input", function() {
+    const v = parseInt(this.value) || 1;
+    if (v < 1) this.value = 1;
+    document.getElementById("btnMenos").disabled = (parseInt(this.value) || 1) <= 1;
+  });
+
+  document.getElementById("valor").addEventListener("input", function() {
+    let digits = this.value.replace(/\D/g, "");
+    if (digits === "") { this.value = ""; return; }
+    digits = digits.replace(/^0+/, "") || "0";
+    while (digits.length < 3) digits = "0" + digits;
+    const intPart = digits.slice(0, -2).replace(/^0+/, "") || "0";
+    const decPart = digits.slice(-2);
+    const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    this.value = intFormatted + "," + decPart;
+  });
+
+  function resetFormulario() {
+    document.getElementById("descricao").value = "";
+    document.getElementById("valor").value = "";
+    document.getElementById("parcelas").value = "1";
+    document.getElementById("btnMenos").disabled = true;
+    document.getElementById("data").value = new Date().toISOString().split("T")[0];
+    document.getElementById("inputDespesa").value = "";
+    document.getElementById("inputReceita").value = "";
+    setPagamento("Credito");
+    setTipo("Despesa");
+  }
+
+  function setBtnState(state) {
+    const btn = document.getElementById("btnSalvar");
+    const lbl = document.getElementById("btnLabel");
+    if (state === "sending") { btn.className = "btn sending"; lbl.textContent = "ENVIANDO..."; }
+    else if (state === "ok")  { btn.className = "btn ok";  lbl.textContent = "SALVO!"; resetFormulario(); setTimeout(() => setBtnState("idle"), 2500); }
+    else if (state === "err") { btn.className = "btn err"; lbl.textContent = "ERRO AO SALVAR"; setTimeout(() => setBtnState("idle"), 2500); }
+    else { btn.className = "btn"; lbl.textContent = "SALVAR"; }
+  }
+
+  async function salvar() {
+    const valorTexto = document.getElementById("valor").value.trim();
+    if (!valorTexto) { alert("Informe o valor."); return; }
+    const valor = parseFloat(valorTexto.replace(/\./g, "").replace(",", "."));
+    if (isNaN(valor) || valor <= 0) { alert("Valor inválido."); return; }
+    const parcelas = parseInt(document.getElementById("parcelas").value) || 1;
+    const categoria = tipoAtual === "Despesa"
+      ? document.getElementById("inputDespesa").value
+      : document.getElementById("inputReceita").value;
+    if (!categoria) { alert("Selecione uma categoria."); return; }
+    const payload = {
+      data: document.getElementById("data").value,
+      tipo: tipoAtual,
+      categoria,
+      descricao: document.getElementById("descricao").value,
+      pagamento: pagamentoAtual,
+      parcelas,
+      valor
+    };
+    setBtnState("sending");
+    try {
+      const res = await fetch(SUPABASE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + SUPABASE_KEY,
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify(payload)
+      });
+      setBtnState(res.status === 201 ? "ok" : "err");
+    } catch (e) {
+      setBtnState("err");
+    }
+  }
+</script>
+
+</body>
+</html>
