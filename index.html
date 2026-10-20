@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Controle Financeiro — Vinícius Teodoro</title>
+<title>Controle Financeiro</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -236,121 +236,321 @@
   .btn.sending { background: #6b7280; pointer-events: none; }
   .btn.ok  { background: #15803d; }
   .btn.err { background: #b91c1c; }
+
+  /* ---------- fase 1: login, abas, histórico ---------- */
+  [hidden] { display: none !important; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .sair { background: none; border: 1px solid #A8B8A6; color: #fff; font-size: 11px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+  .abas { display: grid; grid-template-columns: 1fr 1fr; background: #F5F2EC; }
+  .aba { padding: 12px; border: none; background: none; font-size: 13px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: #9ca3af; cursor: pointer; border-bottom: 3px solid transparent; }
+  .aba.ativa { color: #3B4A3A; border-bottom-color: #3B4A3A; background: #fff; }
+  .aviso { font-size: 13px; color: #6b7280; line-height: 1.45; margin-bottom: 1rem; }
+  .aviso b { color: #111827; }
+  .erro-msg { font-size: 13px; color: #b91c1c; margin-top: 10px; }
+  .link-btn { background: none; border: none; color: #3B4A3A; font-size: 13px; font-weight: 600; text-decoration: underline; cursor: pointer; padding: 10px 0 0; }
+  #codigo { letter-spacing: 6px; font-size: 22px; text-align: center; font-weight: 700; }
+  .dica { font-size: 12px; color: #6b7280; margin: -6px 0 12px; }
+  .editando { background: #FFF7E6; border: 1px solid #F5D9A6; color: #7A5B1F; font-size: 13px; border-radius: 10px; padding: 9px 12px; margin-bottom: 1rem; }
+  .btn.secundario { background: #f3f4f6; color: #374151; margin-top: 8px; }
+  .btn.secundario:hover { background: #e5e7eb; }
+  .btn.perigo { background: #fff; color: #b91c1c; border: 1.5px solid #fca5a5; margin-top: 8px; }
+  .btn.perigo:hover { background: #fef2f2; }
+
+  .mes-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .mes-nav strong { font-size: 15px; color: #111827; }
+  .mes-btn { width: 40px; height: 40px; border-radius: 10px; border: 1.5px solid #e5e7eb; background: #f9fafb; font-size: 18px; color: #3B4A3A; cursor: pointer; }
+  .totais { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1rem; }
+  .totais div { background: #F5F2EC; border-radius: 10px; padding: 8px 10px; }
+  .totais span { display: block; font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: .4px; }
+  .totais b { font-size: 13px; color: #111827; }
+  .totais b.pos { color: #15803d; }
+  .totais b.neg { color: #b91c1c; }
+  .dia { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; margin: 12px 0 6px; }
+  .item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px 12px; border: 1.5px solid #f3f4f6; border-radius: 10px; background: #fff; cursor: pointer; margin-bottom: 6px; }
+  .item:hover { border-color: #e5e7eb; background: #f9fafb; }
+  .item-txt { flex: 1; min-width: 0; }
+  .item-txt strong { display: block; font-size: 14px; color: #111827; }
+  .item-txt span { display: block; font-size: 12px; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item-valor { font-size: 14px; font-weight: 700; color: #111827; white-space: nowrap; }
+  .item-valor.receita { color: #15803d; }
+  .vazio { text-align: center; font-size: 13px; color: #9ca3af; padding: 1.5rem 0; }
+  .carregando { text-align: center; font-size: 13px; color: #9ca3af; padding: 2rem 0; }
 </style>
 </head>
 <body>
 
 <div class="card">
   <div class="header">
-    <h1>CONTROLE FINANCEIRO</h1>
-    <p>VINÍCIUS TEODORO</p>
+    <div>
+      <h1>CONTROLE FINANCEIRO</h1>
+      <p id="quem">&nbsp;</p>
+    </div>
+    <button class="sair" id="btnSair" onclick="sair()" hidden>Sair</button>
   </div>
 
-  <div class="body">
-    <div class="tipo-row">
-      <button class="tipo-btn active-despesa" id="btnDespesa" onclick="setTipo('Despesa')">↓ Despesa</button>
-      <button class="tipo-btn" id="btnReceita" onclick="setTipo('Receita')">↑ Receita</button>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="field">
-      <label>Data</label>
-      <input type="date" id="data">
-    </div>
-
-    <div class="cat-block visible" id="catDespesa">
+  <!-- ===== Login ===== -->
+  <div class="body" id="telaLogin" hidden>
+    <div id="passoEmail">
+      <p class="aviso">Digite seu e-mail. Vamos mandar um <b>código de acesso</b> para você entrar, sem senha.</p>
       <div class="field">
-        <label>Categoria</label>
+        <label for="email">E-mail</label>
+        <input type="email" id="email" autocomplete="email" placeholder="voce@email.com">
+      </div>
+      <button class="btn" id="btnEnviarCodigo" onclick="enviarCodigo()"><span>ENVIAR CÓDIGO</span></button>
+    </div>
+    <div id="passoCodigo" hidden>
+      <p class="aviso">Mandamos um código para <b id="emailEnviado"></b>. Abra o e-mail, copie o código e cole aqui.</p>
+      <div class="field">
+        <label for="codigo">Código</label>
+        <input type="tel" inputmode="numeric" id="codigo" autocomplete="one-time-code" maxlength="10" placeholder="000000">
+      </div>
+      <button class="btn" id="btnEntrar" onclick="confirmarCodigo()"><span>ENTRAR</span></button>
+      <button class="link-btn" onclick="voltarEmail()">Usar outro e-mail ou reenviar</button>
+    </div>
+    <p class="erro-msg" id="erroLogin" hidden></p>
+  </div>
+
+  <!-- ===== App ===== -->
+  <div id="telaApp" hidden>
+    <div class="abas">
+      <button class="aba ativa" id="abaNovo" onclick="mostrarAba('novo')">Lançar</button>
+      <button class="aba" id="abaHistorico" onclick="mostrarAba('historico')">Histórico</button>
+    </div>
+
+    <div class="body" id="painelNovo">
+      <div class="editando" id="avisoEdicao" hidden>Editando um lançamento. Salve ou cancele.</div>
+
+      <div class="tipo-row">
+        <button class="tipo-btn active-despesa" id="btnDespesa" onclick="setTipo('Despesa')">↓ Despesa</button>
+        <button class="tipo-btn" id="btnReceita" onclick="setTipo('Receita')">↑ Receita</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label for="data" id="labelData">Data</label>
+        <input type="date" id="data">
+      </div>
+
+      <div class="field">
+        <label for="inputCategoria">Categoria</label>
         <div class="autocomplete-wrapper">
-          <input type="text" id="inputDespesa" placeholder="Selecione ou digite..." autocomplete="off">
+          <input type="text" id="inputCategoria" placeholder="Selecione ou digite..." autocomplete="off">
           <span class="autocomplete-arrow">▼</span>
-          <div class="autocomplete-list" id="listaDespesa"></div>
+          <div class="autocomplete-list" id="listaCategoria"></div>
         </div>
       </div>
-    </div>
 
-    <div class="cat-block" id="catReceita">
       <div class="field">
-        <label>Categoria</label>
-        <div class="autocomplete-wrapper">
-          <input type="text" id="inputReceita" placeholder="Selecione ou digite..." autocomplete="off">
-          <span class="autocomplete-arrow">▼</span>
-          <div class="autocomplete-list" id="listaReceita"></div>
+        <label for="descricao">Descrição</label>
+        <input type="text" id="descricao" placeholder="Ex: Almoço, Uber...">
+      </div>
+
+      <div id="campoPagamento" class="field">
+        <label>Pagamento</label>
+        <div class="pagamento-row">
+          <button class="pag-btn" id="btnDebito" onclick="setPagamento('Debito')">Débito</button>
+          <button class="pag-btn active" id="btnCredito" onclick="setPagamento('Credito')">Crédito</button>
         </div>
       </div>
-    </div>
 
-    <div class="field">
-      <label>Descrição</label>
-      <input type="text" id="descricao" placeholder="Ex: Almoço, Uber...">
-    </div>
-
-    <div id="campoPagamento" class="field">
-      <label>Pagamento</label>
-      <div class="pagamento-row">
-        <button class="pag-btn" id="btnDebito" onclick="setPagamento('Debito')">Débito</button>
-        <button class="pag-btn active" id="btnCredito" onclick="setPagamento('Credito')">Crédito</button>
-      </div>
-    </div>
-
-    <div class="row2">
-      <div class="field">
-        <label>Parcelas</label>
-        <div class="parcelas-wrapper">
-          <button class="parcelas-btn" id="btnMenos" onclick="alterarParcelas(-1)" disabled>−</button>
-          <input type="tel" inputmode="numeric" id="parcelas" value="1" min="1">
-          <button class="parcelas-btn" onclick="alterarParcelas(1)">+</button>
+      <div class="row2">
+        <div class="field" id="campoParcelas">
+          <label for="parcelas">Parcelas</label>
+          <div class="parcelas-wrapper">
+            <button class="parcelas-btn" id="btnMenos" onclick="alterarParcelas(-1)" disabled>−</button>
+            <input type="tel" inputmode="numeric" id="parcelas" value="1" min="1">
+            <button class="parcelas-btn" onclick="alterarParcelas(1)">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="valor" id="labelValor">Valor</label>
+          <div class="valor-wrapper">
+            <span class="valor-prefix">R$</span>
+            <input type="tel" inputmode="numeric" id="valor" placeholder="0,00">
+          </div>
         </div>
       </div>
-      <div class="field">
-        <label>Valor</label>
-        <div class="valor-wrapper">
-          <span class="valor-prefix">R$</span>
-          <input type="tel" inputmode="numeric" id="valor" placeholder="0,00">
-        </div>
-      </div>
+      <p class="dica" id="dicaParcelas" hidden></p>
+
+      <button class="btn" id="btnSalvar" onclick="salvar()">
+        <span id="btnLabel">SALVAR</span>
+      </button>
+      <button class="btn secundario" id="btnCancelar" onclick="cancelarEdicao()" hidden>CANCELAR</button>
+      <button class="btn perigo" id="btnApagar" onclick="apagar()" hidden>APAGAR LANÇAMENTO</button>
     </div>
 
-    <button class="btn" id="btnSalvar" onclick="salvar()">
-      <span id="btnLabel">SALVAR</span>
-    </button>
+    <div class="body" id="painelHistorico" hidden>
+      <div class="mes-nav">
+        <button class="mes-btn" onclick="mudarMes(-1)" aria-label="Mês anterior">‹</button>
+        <strong id="nomeMes"></strong>
+        <button class="mes-btn" onclick="mudarMes(1)" aria-label="Próximo mês">›</button>
+      </div>
+      <div class="totais">
+        <div><span>Receitas</span><b id="totReceitas" class="pos">–</b></div>
+        <div><span>Despesas</span><b id="totDespesas">–</b></div>
+        <div><span>Saldo</span><b id="totSaldo">–</b></div>
+      </div>
+      <div id="listaHistorico"></div>
+      <p class="aviso" style="margin-top:12px">Compras parceladas aparecem uma vez em cada mês, com o valor da parcela. Toque num item para editar ou apagar a compra.</p>
+    </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
-  const SUPABASE_URL = "https://khjmarmemnngzbbwhdjf.supabase.co/rest/v1/lancamentos";
+  // A chave anon é pública por natureza. Quem protege os dados é o login + RLS
+  // (supabase/fase1.sql): sem login ela não lê nem grava nada.
+  const SUPABASE_URL = "https://khjmarmemnngzbbwhdjf.supabase.co";
   const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtoam1hcm1lbW5uZ3piYndoZGpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2ODc5MTUsImV4cCI6MjA5ODI2MzkxNX0.SSYk9ZhPCPTu4f6M9PQdoPiVDQk_TLVG1m8E1BOhVL0";
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let usuario = null;
+  let categorias = [];          // [{ nome, tipo }] do banco, só as suas
   let tipoAtual = "Despesa";
   let pagamentoAtual = "Credito";
+  let editandoId = null;
+  let mesHistorico = mesDe(hojeISO());
 
-  const categoriasDespesa = [
-    "Cabelo","Carro","Compras","iFood","Júlia","Saídas","Uber"
-  ];
-  const categoriasReceita = ["BASF","Ivan","MX","VR"];
+  const $ = id => document.getElementById(id);
 
-  document.getElementById("data").value = new Date().toISOString().split("T")[0];
-
-  function setTipo(t) {
-    tipoAtual = t;
-    document.getElementById("btnDespesa").className = "tipo-btn" + (t === "Despesa" ? " active-despesa" : "");
-    document.getElementById("btnReceita").className = "tipo-btn" + (t === "Receita" ? " active-receita" : "");
-    document.getElementById("catDespesa").className = "cat-block" + (t === "Despesa" ? " visible" : "");
-    document.getElementById("catReceita").className = "cat-block" + (t === "Receita" ? " visible" : "");
-    document.getElementById("campoPagamento").style.display = t === "Receita" ? "none" : "block";
+  // ---------- datas no fuso do celular (nada de toISOString, que é UTC) ----------
+  function hojeISO() {
+    const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function mesDe(iso) { return iso.slice(0, 7); }
+  function somarMes(mes, n) {
+    const [a, m] = mes.split("-").map(Number);
+    const d = new Date(a, m - 1 + n, 1);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+  }
+  const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  function nomeMes(mes) { const [a, m] = mes.split("-").map(Number); return MESES[m - 1] + " de " + a; }
+  function dataCurta(iso) { const [, m, d] = iso.split("-"); return d + "/" + m; }
+  function moeda(v) { return Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
+  function esc(s) {
+    return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
-  function setupAutocomplete(inputId, listaId, opcoes) {
-    const input = document.getElementById(inputId);
-    const lista = document.getElementById(listaId);
+  // ---------- login por código ----------
+  function mostrarErroLogin(msg) {
+    $("erroLogin").textContent = msg;
+    $("erroLogin").hidden = !msg;
+  }
+
+  async function enviarCodigo() {
+    const email = $("email").value.trim().toLowerCase();
+    if (!email) { mostrarErroLogin("Digite seu e-mail."); return; }
+    mostrarErroLogin("");
+    $("btnEnviarCodigo").classList.add("sending");
+    // shouldCreateUser: false -> só entra quem foi convidado no painel do Supabase
+    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
+    $("btnEnviarCodigo").classList.remove("sending");
+    if (error) {
+      mostrarErroLogin(/signups not allowed|not found/i.test(error.message)
+        ? "Este e-mail não foi convidado." : "Não deu para enviar o código: " + error.message);
+      return;
+    }
+    try { localStorage.setItem("ultimo_email", email); } catch (_) {}
+    $("emailEnviado").textContent = email;
+    $("passoEmail").hidden = true;
+    $("passoCodigo").hidden = false;
+    $("codigo").value = "";
+    $("codigo").focus();
+  }
+
+  async function confirmarCodigo() {
+    const email = $("emailEnviado").textContent;
+    const token = $("codigo").value.replace(/\D/g, "");
+    if (token.length < 6) { mostrarErroLogin("O código tem 6 dígitos."); return; }
+    mostrarErroLogin("");
+    $("btnEntrar").classList.add("sending");
+    const { error } = await sb.auth.verifyOtp({ email, token, type: "email" });
+    $("btnEntrar").classList.remove("sending");
+    if (error) mostrarErroLogin("Código inválido ou vencido. Peça outro.");
+    // se deu certo, onAuthStateChange abre o app
+  }
+
+  function voltarEmail() {
+    $("passoEmail").hidden = false;
+    $("passoCodigo").hidden = true;
+    mostrarErroLogin("");
+  }
+
+  async function sair() {
+    await sb.auth.signOut();
+  }
+
+  $("email").addEventListener("keydown", e => { if (e.key === "Enter") enviarCodigo(); });
+  $("codigo").addEventListener("keydown", e => { if (e.key === "Enter") confirmarCodigo(); });
+  $("codigo").addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "");
+  });
+
+  async function aoMudarUsuario(novo) {
+    const mudou = (novo && novo.id) !== (usuario && usuario.id);
+    usuario = novo;
+    $("btnSair").hidden = !usuario;
+    $("quem").textContent = usuario ? usuario.email.toUpperCase() : " ";
+    $("telaLogin").hidden = !!usuario;
+    $("telaApp").hidden = !usuario;
+    if (!usuario) {
+      try { $("email").value = localStorage.getItem("ultimo_email") || ""; } catch (_) {}
+      voltarEmail();
+      return;
+    }
+    if (mudou) {
+      resetFormulario();
+      mostrarAba("novo");
+      await carregarCategorias();
+    }
+  }
+
+  sb.auth.onAuthStateChange((_evento, sessao) => {
+    // fora do callback para não travar o cliente do Supabase
+    setTimeout(() => aoMudarUsuario(sessao ? sessao.user : null), 0);
+  });
+
+  // ---------- abas ----------
+  function mostrarAba(aba) {
+    $("abaNovo").classList.toggle("ativa", aba === "novo");
+    $("abaHistorico").classList.toggle("ativa", aba === "historico");
+    $("painelNovo").hidden = aba !== "novo";
+    $("painelHistorico").hidden = aba !== "historico";
+    if (aba === "historico") carregarHistorico();
+  }
+
+  // ---------- categorias (tabela categorias no Supabase) ----------
+  async function carregarCategorias() {
+    const { data, error } = await sb.from("categorias").select("nome, tipo").eq("ativa", true).order("nome");
+    if (!error) categorias = data;
+  }
+  function categoriasDoTipo() {
+    return categorias.filter(c => c.tipo === tipoAtual).map(c => c.nome);
+  }
+
+  // ---------- formulário ----------
+  function setTipo(t) {
+    if (t !== tipoAtual) $("inputCategoria").value = "";
+    tipoAtual = t;
+    $("btnDespesa").className = "tipo-btn" + (t === "Despesa" ? " active-despesa" : "");
+    $("btnReceita").className = "tipo-btn" + (t === "Receita" ? " active-receita" : "");
+    $("campoPagamento").style.display = t === "Receita" ? "none" : "block";
+    $("campoParcelas").style.visibility = t === "Receita" ? "hidden" : "visible";
+    atualizarDicaParcelas();
+  }
+
+  function setupAutocomplete(input, lista) {
     let selectedIndex = -1;
 
     function renderLista(filtro) {
       const termo = filtro.toLowerCase();
-      const filtradas = opcoes.filter(o => o.toLowerCase().includes(termo));
+      const filtradas = categoriasDoTipo().filter(o => o.toLowerCase().includes(termo));
       lista.innerHTML = "";
       selectedIndex = -1;
-      if (filtradas.length === 0) { lista.classList.remove("open"); return; }
+      const nova = filtro.trim() && !categoriasDoTipo().some(o => o.toLowerCase() === termo.trim());
+      if (filtradas.length === 0 && !nova) { lista.classList.remove("open"); return; }
       filtradas.forEach(op => {
         const item = document.createElement("div");
         item.className = "autocomplete-item";
@@ -362,6 +562,14 @@
         });
         lista.appendChild(item);
       });
+      if (nova) {
+        const item = document.createElement("div");
+        item.className = "autocomplete-item";
+        item.style.color = "#6b7280";
+        item.textContent = "+ Nova categoria: " + filtro.trim();
+        item.addEventListener("mousedown", e => { e.preventDefault(); lista.classList.remove("open"); });
+        lista.appendChild(item);
+      }
       lista.classList.add("open");
     }
 
@@ -374,7 +582,7 @@
       } else if (e.key === "ArrowUp") {
         selectedIndex = Math.max(selectedIndex - 1, 0);
       } else if (e.key === "Enter" && selectedIndex >= 0) {
-        input.value = items[selectedIndex].textContent;
+        if (!items[selectedIndex].textContent.startsWith("+ ")) input.value = items[selectedIndex].textContent;
         lista.classList.remove("open");
         return;
       } else if (e.key === "Escape") {
@@ -388,95 +596,202 @@
     });
   }
 
-  setupAutocomplete("inputDespesa", "listaDespesa", categoriasDespesa);
-  setupAutocomplete("inputReceita", "listaReceita", categoriasReceita);
-
+  setupAutocomplete($("inputCategoria"), $("listaCategoria"));
 
   function setPagamento(p) {
     pagamentoAtual = p;
-    document.getElementById("btnDebito").className = "pag-btn" + (p === "Debito" ? " active" : "");
-    document.getElementById("btnCredito").className = "pag-btn" + (p === "Credito" ? " active" : "");
+    $("btnDebito").className = "pag-btn" + (p === "Debito" ? " active" : "");
+    $("btnCredito").className = "pag-btn" + (p === "Credito" ? " active" : "");
   }
+  function lerParcelas() { return Math.max(1, parseInt($("parcelas").value) || 1); }
   function alterarParcelas(delta) {
-    const input = document.getElementById("parcelas");
-    const novo = Math.max(1, (parseInt(input.value) || 1) + delta);
-    input.value = novo;
-    document.getElementById("btnMenos").disabled = novo <= 1;
+    const novo = Math.min(72, Math.max(1, lerParcelas() + delta));
+    $("parcelas").value = novo;
+    $("btnMenos").disabled = novo <= 1;
+    atualizarDicaParcelas();
   }
 
-  document.getElementById("parcelas").addEventListener("input", function() {
-    const v = parseInt(this.value) || 1;
-    if (v < 1) this.value = 1;
-    document.getElementById("btnMenos").disabled = (parseInt(this.value) || 1) <= 1;
+  $("parcelas").addEventListener("input", function() {
+    $("btnMenos").disabled = lerParcelas() <= 1;
+    atualizarDicaParcelas();
   });
 
-  document.getElementById("valor").addEventListener("input", function() {
-    let digits = this.value.replace(/\D/g, "");
-    if (digits === "") { this.value = ""; return; }
+  function formatarValor(texto) {
+    let digits = String(texto).replace(/\D/g, "");
+    if (digits === "") return "";
     digits = digits.replace(/^0+/, "") || "0";
     while (digits.length < 3) digits = "0" + digits;
     const intPart = digits.slice(0, -2).replace(/^0+/, "") || "0";
-    const decPart = digits.slice(-2);
-    const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    this.value = intFormatted + "," + decPart;
+    return intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "," + digits.slice(-2);
+  }
+  function lerValor() {
+    return parseFloat($("valor").value.trim().replace(/\./g, "").replace(",", "."));
+  }
+
+  $("valor").addEventListener("input", function() {
+    this.value = formatarValor(this.value);
+    atualizarDicaParcelas();
   });
+  $("data").addEventListener("input", atualizarDicaParcelas);
+
+  // O valor é sempre o TOTAL da compra; aqui mostramos quanto fica cada parcela.
+  function atualizarDicaParcelas() {
+    const n = tipoAtual === "Despesa" ? lerParcelas() : 1;
+    const valor = lerValor();
+    $("labelValor").textContent = n > 1 ? "Valor total" : "Valor";
+    $("labelData").textContent = n > 1 ? "Data da compra" : "Data";
+    const mostrar = n > 1 && valor > 0;
+    $("dicaParcelas").hidden = !mostrar;
+    if (mostrar) {
+      const ultimo = somarMes(mesDe($("data").value || hojeISO()), n - 1);
+      $("dicaParcelas").textContent = `${n}x de ${moeda(valor / n)}, uma por mês, até ${nomeMes(ultimo).toLowerCase()}.`;
+    }
+  }
 
   function resetFormulario() {
-    document.getElementById("descricao").value = "";
-    document.getElementById("valor").value = "";
-    document.getElementById("parcelas").value = "1";
-    document.getElementById("btnMenos").disabled = true;
-    document.getElementById("data").value = new Date().toISOString().split("T")[0];
-    document.getElementById("inputDespesa").value = "";
-    document.getElementById("inputReceita").value = "";
+    editandoId = null;
+    $("descricao").value = "";
+    $("valor").value = "";
+    $("parcelas").value = "1";
+    $("btnMenos").disabled = true;
+    $("data").value = hojeISO();
+    $("inputCategoria").value = "";
     setPagamento("Credito");
     setTipo("Despesa");
+    mostrarModoEdicao(false);
+  }
+
+  function mostrarModoEdicao(sim) {
+    $("avisoEdicao").hidden = !sim;
+    $("btnCancelar").hidden = !sim;
+    $("btnApagar").hidden = !sim;
+    setBtnState("idle");
   }
 
   function setBtnState(state) {
-    const btn = document.getElementById("btnSalvar");
-    const lbl = document.getElementById("btnLabel");
+    const btn = $("btnSalvar");
+    const lbl = $("btnLabel");
+    const idle = editandoId ? "SALVAR ALTERAÇÕES" : "SALVAR";
     if (state === "sending") { btn.className = "btn sending"; lbl.textContent = "ENVIANDO..."; }
-    else if (state === "ok")  { btn.className = "btn ok";  lbl.textContent = "SALVO!"; resetFormulario(); setTimeout(() => setBtnState("idle"), 2500); }
+    else if (state === "ok")  { btn.className = "btn ok";  lbl.textContent = "SALVO!"; setTimeout(() => setBtnState("idle"), 2000); }
     else if (state === "err") { btn.className = "btn err"; lbl.textContent = "ERRO AO SALVAR"; setTimeout(() => setBtnState("idle"), 2500); }
-    else { btn.className = "btn"; lbl.textContent = "SALVAR"; }
+    else { btn.className = "btn"; lbl.textContent = idle; }
   }
 
   async function salvar() {
-    const valorTexto = document.getElementById("valor").value.trim();
-    if (!valorTexto) { alert("Informe o valor."); return; }
-    const valor = parseFloat(valorTexto.replace(/\./g, "").replace(",", "."));
+    if (!$("valor").value.trim()) { alert("Informe o valor."); return; }
+    const valor = lerValor();
     if (isNaN(valor) || valor <= 0) { alert("Valor inválido."); return; }
-    const parcelas = parseInt(document.getElementById("parcelas").value) || 1;
-    const categoria = tipoAtual === "Despesa"
-      ? document.getElementById("inputDespesa").value
-      : document.getElementById("inputReceita").value;
+    const categoria = $("inputCategoria").value.trim();
     if (!categoria) { alert("Selecione uma categoria."); return; }
+    if (!$("data").value) { alert("Informe a data."); return; }
+    const despesa = tipoAtual === "Despesa";
     const payload = {
-      data: document.getElementById("data").value,
+      data: $("data").value,
       tipo: tipoAtual,
       categoria,
-      descricao: document.getElementById("descricao").value,
-      pagamento: pagamentoAtual,
-      parcelas,
-      valor
+      descricao: $("descricao").value.trim(),
+      pagamento: despesa ? pagamentoAtual : null,
+      parcelas: despesa ? lerParcelas() : 1,
+      valor: Math.round(valor * 100) / 100   // total da compra
     };
     setBtnState("sending");
     try {
-      const res = await fetch(SUPABASE_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_KEY,
-          "Authorization": "Bearer " + SUPABASE_KEY,
-          "Prefer": "return=minimal"
-        },
-        body: JSON.stringify(payload)
-      });
-      setBtnState(res.status === 201 ? "ok" : "err");
+      // categoria nova digitada: entra na sua lista
+      if (!categoriasDoTipo().some(c => c.toLowerCase() === categoria.toLowerCase())) {
+        const { error } = await sb.from("categorias").insert({ nome: categoria, tipo: tipoAtual });
+        if (!error) categorias.push({ nome: categoria, tipo: tipoAtual });
+      }
+      const { error } = editandoId
+        ? await sb.from("lancamentos").update(payload).eq("id", editandoId)
+        : await sb.from("lancamentos").insert(payload);
+      if (error) throw error;
+      const eraEdicao = !!editandoId;
+      setBtnState("ok");
+      resetFormulario();
+      setBtnState("ok");
+      if (eraEdicao) {
+        mesHistorico = mesDe(payload.data);
+        mostrarAba("historico");
+      }
     } catch (e) {
+      console.error(e);
       setBtnState("err");
     }
+  }
+
+  // ---------- editar / apagar ----------
+  async function editar(id) {
+    const { data: l, error } = await sb.from("lancamentos").select("*").eq("id", id).single();
+    if (error || !l) { alert("Não encontrei esse lançamento."); return; }
+    editandoId = l.id;
+    setTipo(l.tipo === "Receita" ? "Receita" : "Despesa");
+    $("data").value = String(l.data).slice(0, 10);
+    $("inputCategoria").value = l.categoria || "";
+    $("descricao").value = l.descricao || "";
+    setPagamento(l.pagamento === "Debito" ? "Debito" : "Credito");
+    $("parcelas").value = l.parcelas || 1;
+    $("btnMenos").disabled = (l.parcelas || 1) <= 1;
+    $("valor").value = formatarValor(Math.round(Number(l.valor) * 100));
+    atualizarDicaParcelas();
+    mostrarModoEdicao(true);
+    mostrarAba("novo");
+    window.scrollTo(0, 0);
+  }
+
+  function cancelarEdicao() {
+    resetFormulario();
+    mostrarAba("historico");
+  }
+
+  async function apagar() {
+    const n = lerParcelas();
+    const msg = n > 1 ? `Apagar esta compra e as ${n} parcelas?` : "Apagar este lançamento?";
+    if (!editandoId || !confirm(msg)) return;
+    const { error } = await sb.from("lancamentos").delete().eq("id", editandoId);
+    if (error) { alert("Não deu para apagar: " + error.message); return; }
+    resetFormulario();
+    mostrarAba("historico");
+  }
+
+  // ---------- histórico do mês (view v_parcelas: cada parcela no seu mês) ----------
+  function mudarMes(delta) {
+    mesHistorico = somarMes(mesHistorico, delta);
+    carregarHistorico();
+  }
+
+  async function carregarHistorico() {
+    const mes = mesHistorico;
+    $("nomeMes").textContent = nomeMes(mes);
+    $("listaHistorico").innerHTML = '<p class="carregando">Carregando...</p>';
+    const { data, error } = await sb.from("v_parcelas")
+      .select("lancamento_id, tipo, categoria, descricao, data, parcela, total_parcelas, valor")
+      .eq("mes", mes + "-01")
+      .order("data", { ascending: false })
+      .order("lancamento_id", { ascending: false });
+    if (mes !== mesHistorico) return;   // trocou de mês enquanto carregava
+    if (error) {
+      $("listaHistorico").innerHTML = '<p class="vazio">Não deu para carregar o histórico.</p>';
+      return;
+    }
+    let receitas = 0, despesas = 0, diaAnterior = "", html = "";
+    for (const x of data) {
+      const v = Number(x.valor);
+      if (x.tipo === "Receita") receitas += v; else despesas += v;
+      if (x.data !== diaAnterior) { html += `<div class="dia">${dataCurta(x.data)}</div>`; diaAnterior = x.data; }
+      const detalhe = [x.descricao, x.total_parcelas > 1 ? `parcela ${x.parcela}/${x.total_parcelas}` : ""].filter(Boolean).join(" · ");
+      html += `
+        <button class="item" onclick="editar(${Number(x.lancamento_id)})">
+          <div class="item-txt"><strong>${esc(x.categoria)}</strong><span>${esc(detalhe) || "&nbsp;"}</span></div>
+          <span class="item-valor ${x.tipo === "Receita" ? "receita" : ""}">${x.tipo === "Receita" ? "+" : "−"} ${moeda(v)}</span>
+        </button>`;
+    }
+    $("listaHistorico").innerHTML = html || '<p class="vazio">Nada lançado neste mês.</p>';
+    const saldo = receitas - despesas;
+    $("totReceitas").textContent = moeda(receitas);
+    $("totDespesas").textContent = moeda(despesas);
+    $("totSaldo").textContent = moeda(saldo);
+    $("totSaldo").className = saldo >= 0 ? "pos" : "neg";
   }
 </script>
 
